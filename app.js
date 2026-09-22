@@ -336,10 +336,9 @@ function updateProfileSwitcher() {
 function renderProfileVersionList() {
   const list = document.querySelector("#profile-version-list");
   if (!list) return;
-  list.innerHTML = state.profiles.map((profile, index) => {
+  list.innerHTML = state.profiles.map((profile) => {
     const active = profile.profileId === state.activeProfileId;
-    const type = profile.profileType === "job_specific" ? "职位档案" : "基础档案";
-    return `<div class="profile-version-item${active ? " active" : ""}"><button class="profile-version-main" type="button" data-profile-switch="${escapeHtml(profile.profileId)}"><span class="profile-version-mark">${active ? "✓" : index + 1}</span><span class="profile-version-copy"><span class="profile-version-name">${escapeHtml(profile.displayName)}</span><span class="profile-version-meta">${type}${active ? " · 当前使用" : ""}</span></span></button><div class="profile-version-actions"><button class="text-button" type="button" data-profile-rename="${escapeHtml(profile.profileId)}">重命名</button><button class="text-button danger" type="button" data-profile-delete="${escapeHtml(profile.profileId)}">删除</button></div></div>`;
+    return `<div class="profile-version-item${active ? " active" : ""}"><button class="profile-version-main" type="button" data-profile-switch="${escapeHtml(profile.profileId)}"><span class="profile-version-copy"><span class="profile-version-title"><span class="profile-version-name">${escapeHtml(profile.displayName)}</span>${active ? '<span class="profile-version-tag">使用中</span>' : ""}</span></span></button><div class="profile-version-actions"><button class="text-button" type="button" data-profile-rename="${escapeHtml(profile.profileId)}">重命名</button><button class="text-button danger" type="button" data-profile-delete="${escapeHtml(profile.profileId)}">删除</button></div></div>`;
   }).join("");
 }
 

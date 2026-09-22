@@ -38,7 +38,7 @@ button { cursor: pointer; }
 }
 
 .eyebrow { color: #8b9696; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.profile-switcher { padding: 0 9px 14px; }
+.profile-switcher { padding: 0 0 14px; }
 .profile-select-row { display: flex; gap: 6px; margin-top: 9px; }
 select, input, textarea { width: 100%; color: var(--ink); background: #fff; border: 1px solid #d1d5db; border-radius: 7px; outline: none; transition: border-color .18s, box-shadow .18s; }
 select, input { height: 42px; padding: 0 12px; }
@@ -49,7 +49,7 @@ select:focus, input:focus, textarea:focus { border-color: var(--black); box-shad
 .profile-name-button #profile-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .icon-button { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--black); }
 .icon-button:hover { background: var(--black-soft); color: var(--black-dark); }
-.plus-icon { display: block; font-size: 28px; font-weight: 300; line-height: 1; transform: translateY(-1px); }
+.plus-icon { display: block; }
 
 .custom-select { position: relative; width: 100%; }
 .custom-select-trigger { width: 100%; height: 42px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px; border: 1px solid #d1d5db; border-radius: 7px; background: #fff; color: var(--ink); text-align: left; font-size: 13px; outline: none; transition: border-color .18s, box-shadow .18s, background .18s; }
@@ -122,30 +122,30 @@ h1, h2, h3, p { margin: 0; }
 
 .modal-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 24px; background: rgba(17, 24, 39, .28); }
 .modal-backdrop[hidden] { display: none; }
-.modal-card { width: min(100%, 520px); max-height: min(640px, calc(100vh - 48px)); overflow: auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; box-shadow: 0 24px 60px rgba(17, 24, 39, .16); }
+.modal-card { width: min(100%, 520px); max-height: min(640px, calc(100vh - 48px)); overflow: auto; padding: 18px; border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; box-shadow: 0 24px 60px rgba(17, 24, 39, .16); font-size: 12px; }
 .modal-card-editor { width: min(100%, 430px); }
 .confirm-card { width: min(100%, 420px); }
 .modal-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 16px; }
-.modal-header h2 { color: var(--black); font-size: 20px; letter-spacing: -.03em; }
-.modal-close { width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 7px; background: transparent; color: #6b7280; font-size: 24px; line-height: 1; }
+.modal-header h2 { color: var(--black); font-size: 16px; letter-spacing: -.03em; }
+.modal-close { width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 7px; background: transparent; color: #6b7280; font-size: 20px; line-height: 1; }
 .modal-close:hover { background: #f3f4f6; color: var(--black); }
 .profile-version-list { display: grid; gap: 8px; }
 .profile-version-item { display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid #e5e7eb; border-radius: 9px; }
 .profile-version-item.active { border-color: #9ca3af; background: #fafafa; }
 .profile-version-main { min-width: 0; flex: 1; display: flex; align-items: center; gap: 10px; border: 0; background: transparent; color: var(--black); text-align: left; }
-.profile-version-mark { width: 24px; height: 24px; display: grid; place-items: center; flex: 0 0 24px; border-radius: 6px; background: var(--black); color: #fff; font-size: 11px; font-weight: 800; }
-.profile-version-item:not(.active) .profile-version-mark { background: #f3f4f6; color: #6b7280; }
-.profile-version-copy { min-width: 0; display: grid; gap: 3px; }
-.profile-version-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 750; }
-.profile-version-meta { color: #9ca3af; font-size: 11px; }
+.profile-version-copy { min-width: 0; flex: 1; }
+.profile-version-title { min-width: 0; display: flex; align-items: center; gap: 8px; }
+.profile-version-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 750; }
+.profile-version-tag { flex: 0 0 auto; padding: 3px 7px; border-radius: 999px; background: #111827; color: #fff; font-size: 10px; font-weight: 700; line-height: 1.2; }
 .profile-version-actions { display: flex; gap: 3px; }
-.text-button { padding: 6px 7px; border: 0; border-radius: 5px; background: transparent; color: #6b7280; font-size: 11px; }
+.text-button { padding: 6px 7px; border: 0; border-radius: 5px; background: transparent; color: #6b7280; font-size: 10px; }
 .text-button:hover { background: #f3f4f6; color: var(--black); }
 .text-button.danger:hover { color: #111827; }
-.modal-field { display: grid; gap: 8px; color: #374151; font-size: 12px; font-weight: 700; }
+.modal-field { display: grid; gap: 8px; color: #374151; font-size: 11px; font-weight: 700; }
 .modal-field input { height: 42px; }
+.modal-card .button { font-size: 11px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
-.confirm-message { margin: 0; color: #4b5563; font-size: 13px; line-height: 1.6; white-space: pre-line; }
+.confirm-message { margin: 0; color: #4b5563; font-size: 12px; line-height: 1.6; white-space: pre-line; }
 
 @media (max-width: 1120px) {
   body { min-width: 820px; }
