@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FastCV · 个人资料</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="profile-switcher">
+          <div class="profile-select-row">
+            <button class="profile-name-button" id="profile-switch-button" type="button" aria-label="切换版本">
+              <span id="profile-name">我的基础档案</span>
+            </button>
+            <button class="icon-button" id="new-profile-button" type="button" title="新建版本" aria-label="新建版本"><span class="plus-icon" aria-hidden="true">+</span></button>
+          </div>
+        </div>
+
+        <nav class="section-nav" aria-label="资料区块">
+          <button class="nav-item active" data-section="basics" type="button"><span>基本信息</span></button>
+          <button class="nav-item" data-section="contact" type="button"><span>联系方式</span></button>
+          <button class="nav-item" data-section="objective" type="button"><span>求职意向</span></button>
+          <button class="nav-item" data-section="experience" type="button"><span>工作经历</span><b data-count="experience">0</b></button>
+          <button class="nav-item" data-section="education" type="button"><span>教育经历</span><b data-count="education">0</b></button>
+          <button class="nav-item" data-section="projects" type="button"><span>项目经历</span><b data-count="projects">0</b></button>
+          <button class="nav-item" data-section="skills" type="button"><span>技能</span><b data-count="skills">0</b></button>
+          <button class="nav-item" data-section="certifications" type="button"><span>证书</span><b data-count="certifications">0</b></button>
+          <button class="nav-item" data-section="languages" type="button"><span>语言</span><b data-count="languages">0</b></button>
+          <button class="nav-item" data-section="other" type="button"><span>其他经历</span><b data-count="other">0</b></button>
+          <button class="nav-item" data-section="links" type="button"><span>公开链接</span><b data-count="links">0</b></button>
+          <button class="nav-item" data-section="application" type="button"><span>申请信息</span></button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="storage-status"><span class="status-dot"></span><span id="storage-status">本地保存</span></div>
+          <div class="version-label">Data schema v1 · UI v0.1</div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <div class="page-body" id="content-scroll">
+          <section class="content-section active" id="section-basics" data-panel="basics">
+            <div class="section-divider"><h2>基本信息</h2><span class="section-divider-line"></span></div>
+            <div class="form-grid" id="basics-form"></div>
+          </section>
+
+          <section class="content-section" id="section-contact" data-panel="contact">
+            <div class="section-divider"><h2>联系方式</h2><span class="section-divider-line"></span></div>
+            <div class="form-grid" id="contact-form"></div>
+          </section>
+
+          <section class="content-section" id="section-objective" data-panel="objective">
+            <div class="section-divider"><h2>求职意向</h2><span class="section-divider-line"></span></div>
+            <div class="form-grid" id="objective-form"></div>
+          </section>
+
+          <section class="content-section" id="section-experience" data-panel="experience"><div class="section-divider"><h2>工作经历</h2><span class="section-divider-line"></span><button class="button button-primary add-button" data-add="experience" type="button">添加经历</button></div><div class="repeat-list" id="experience-list"></div></section>
+          <section class="content-section" id="section-education" data-panel="education"><div class="section-divider"><h2>教育经历</h2><span class="section-divider-line"></span><button class="button button-primary add-button" data-add="education" type="button">添加教育经历</button></div><div class="repeat-list" id="education-list"></div></section>
+          <section class="content-section" id="section-projects" data-panel="projects"><div class="section-divider"><h2>项目经历</h2><span class="section-divider-line"></span><button class="button button-primary add-button" data-add="projects" type="button">添加项目</button></div><div class="repeat-list" id="projects-list"></div></section>
+          <section class="content-section" id="section-skills" data-panel="skills"><div class="section-divider"><h2>技能</h2><span class="section-divider-line"></span><button class="button button-primary add-button" data-add="skills" type="button">添加技能</button></div><div class="repeat-list" id="skills-list"></div></section>
+          <section class="content-section" id="section-certifications" data-panel="certifications"><div class="section-divider"><h2>证书与资格</h2><span class="section-divider-line"></span><button class="button button-primary add-button" data-add="certifications" type="button">添加证书</button></div><div class="repeat-list" id="certifications-list"></div></section>
+          <section class="content-section" id="section-languages" data-panel="languages"><div class="section-divider"><h2>语言能力</h2><span class="section-divider-line"></span><button class="button button-primary add-button" data-add="languages" type="button">添加语言</button></div><div class="repeat-list" id="languages-list"></div></section>
+          <section class="content-section" id="section-other" data-panel="other"><div class="section-divider"><h2>其他经历</h2><span class="section-divider-line"></span></div><div class="subsection-block first-subsection"><h3>出版物</h3><div class="repeat-list" id="publications-list"></div><button class="button button-quiet add-button" data-add="publications" type="button">添加出版物</button></div><div class="subsection-block"><h3>奖项</h3><div class="repeat-list" id="awards-list"></div><button class="button button-quiet add-button" data-add="awards" type="button">添加奖项</button></div><div class="subsection-block"><div class="subsection-heading"><h3>志愿经历</h3><button class="button button-quiet add-button" data-add="volunteering" type="button">添加志愿经历</button></div><div class="repeat-list" id="volunteering-list"></div></div></section>
+          <section class="content-section" id="section-links" data-panel="links"><div class="section-divider"><h2>公开链接</h2><span class="section-divider-line"></span><button class="button button-primary add-button" data-add="links" type="button">添加链接</button></div><div class="repeat-list" id="links-list"></div></section>
+
+          <section class="content-section" id="section-application" data-panel="application">
+            <div class="section-divider"><h2>申请信息</h2><span class="section-divider-line"></span></div>
+            <div class="subsection-block"><h3>工作授权</h3><div class="form-grid" id="authorization-form"></div></div>
+            <div class="subsection-block"><h3>到岗与薪资</h3><div class="form-grid" id="application-form"></div></div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <div class="modal-backdrop" id="profile-list-modal" hidden>
+      <section class="modal-card modal-card-list" role="dialog" aria-modal="true" aria-labelledby="profile-list-title">
+        <div class="modal-header">
+          <div>
+            <h2 id="profile-list-title">版本管理</h2>
+          </div>
+          <button class="modal-close" type="button" data-modal-close="profile-list-modal" aria-label="关闭">×</button>
+        </div>
+        <div class="profile-version-list" id="profile-version-list"></div>
+      </section>
+    </div>
+    <div class="modal-backdrop" id="profile-editor-modal" hidden>
+      <section class="modal-card modal-card-editor" role="dialog" aria-modal="true" aria-labelledby="profile-editor-title">
+        <div class="modal-header">
+          <div>
+            <h2 id="profile-editor-title">新建版本</h2>
+          </div>
+          <button class="modal-close" type="button" data-modal-close="profile-editor-modal" aria-label="关闭">×</button>
+        </div>
+        <form id="profile-editor-form">
+          <label class="modal-field" for="profile-name-input">版本名称<input id="profile-name-input" type="text" maxlength="80" autocomplete="off" /></label>
+          <div class="modal-actions">
+            <button class="button button-quiet" type="button" data-modal-close="profile-editor-modal">取消</button>
+            <button class="button button-primary" type="submit">保存</button>
+          </div>
+        </form>
+      </section>
+    </div>
+    <div class="modal-backdrop" id="confirm-modal" hidden>
+      <section class="modal-card confirm-card" role="dialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+        <div class="modal-header">
+          <h2 id="confirm-title">确认操作</h2>
+          <button class="modal-close" type="button" data-confirm-cancel aria-label="取消">×</button>
+        </div>
+        <p class="confirm-message" id="confirm-message"></p>
+        <div class="modal-actions">
+          <button class="button button-quiet" type="button" data-confirm-cancel>取消</button>
+          <button class="button button-primary" id="confirm-submit" type="button">确认</button>
+        </div>
+      </section>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>

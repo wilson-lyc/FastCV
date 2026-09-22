@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "FastCV",
+  "version": "0.1.0",
+  "description": "维护个人求职资料，并为后续招聘表单填写提供结构化数据。",
+  "action": {
+    "default_title": "打开 FastCV",
+    "default_popup": "popup.html"
+  },
+  "options_page": "settings.html",
+  "permissions": []
+}
