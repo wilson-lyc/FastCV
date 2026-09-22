@@ -125,6 +125,123 @@ function selectLabel(value, kind) {
   return displayOption(value);
 }
 
+const DATE_PICKER_WEEKDAYS = ["一", "二", "三", "四", "五", "六", "日"];
+const DATE_PICKER_MONTHS = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
+
+function padDatePart(value) { return String(value).padStart(2, "0"); }
+
+function parsePickerValue(value, kind) {
+  const match = String(value || "").match(kind === "date" ? /^(\d{4})-(\d{2})-(\d{2})$/ : /^(\d{4})-(\d{2})$/);
+  if (!match) return null;
+  return { year: Number(match[1]), month: Number(match[2]) - 1, day: kind === "date" ? Number(match[3]) : null };
+}
+
+function pickerValue({ year, month, day }, kind) {
+  return `${year}-${padDatePart(month + 1)}${kind === "date" ? `-${padDatePart(day)}` : ""}`;
+}
+
+function formatPickerValue(value, kind) {
+  const parsed = parsePickerValue(value, kind);
+  if (!parsed) return kind === "date" ? "请选择日期" : "请选择月份";
+  return kind === "date" ? `${parsed.year}年${parsed.month + 1}月${parsed.day}日` : `${parsed.year}年${parsed.month + 1}月`;
+}
+
+function customDateHtml({ path, kind, value }) {
+  const selectedValue = value == null ? "" : String(value);
+  const placeholder = kind === "date" ? "请选择日期" : "请选择月份";
+  return `<div class="custom-date" data-date-root data-value="${escapeHtml(selectedValue)}">
+    <button class="custom-date-trigger${selectedValue ? " has-value" : ""}" type="button" aria-haspopup="dialog" aria-expanded="false" data-date-trigger data-path="${path}" data-kind="${kind}" data-value="${escapeHtml(selectedValue)}">
+      <span class="custom-date-leading" aria-hidden="true"><span class="custom-date-icon"></span></span>
+      <span data-date-label>${escapeHtml(selectedValue ? formatPickerValue(selectedValue, kind) : placeholder)}</span>
+      <span class="custom-select-chevron" aria-hidden="true"></span>
+    </button>
+    <div class="custom-date-popover" role="dialog" aria-label="${kind === "date" ? "选择日期" : "选择月份"}" hidden></div>
+  </div>`;
+}
+
+function datePickerToday(kind) {
+  const today = new Date();
+  return pickerValue({ year: today.getFullYear(), month: today.getMonth(), day: today.getDate() }, kind);
+}
+
+function renderDatePicker(root) {
+  const kind = root.querySelector("[data-date-trigger]")?.dataset.kind || "date";
+  const trigger = root.querySelector("[data-date-trigger]");
+  const selectedValue = trigger?.dataset.value || "";
+  const viewYear = Number(root.dataset.viewYear);
+  const viewMonth = Number(root.dataset.viewMonth);
+  const todayValue = datePickerToday(kind);
+  const navigation = kind === "date"
+    ? `<button class="date-picker-nav" type="button" data-date-nav="-1" aria-label="上一个月">‹</button><div class="date-picker-heading"><strong>${viewYear}年${viewMonth + 1}月</strong><span>选择具体日期</span></div><button class="date-picker-nav" type="button" data-date-nav="1" aria-label="下一个月">›</button>`
+    : `<button class="date-picker-nav" type="button" data-date-nav="-1" aria-label="上一年">‹</button><div class="date-picker-heading"><strong>${viewYear}年</strong><span>选择月份</span></div><button class="date-picker-nav" type="button" data-date-nav="1" aria-label="下一年">›</button>`;
+
+  let body;
+  if (kind === "date") {
+    const firstWeekday = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7;
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    const cellCount = firstWeekday + daysInMonth > 35 ? 42 : 35;
+    const cells = Array.from({ length: cellCount }, (_, index) => {
+      const dayOffset = index - firstWeekday + 1;
+      const cellDate = new Date(viewYear, viewMonth, dayOffset);
+      const outside = dayOffset < 1 || dayOffset > daysInMonth;
+      const value = pickerValue({ year: cellDate.getFullYear(), month: cellDate.getMonth(), day: cellDate.getDate() }, kind);
+      const selected = value === selectedValue;
+      const today = value === todayValue;
+      return `<button class="date-picker-day${outside ? " outside" : ""}${selected ? " selected" : ""}${today ? " today" : ""}" type="button" data-date-option data-value="${value}" aria-label="${formatPickerValue(value, kind)}"${selected ? " aria-current=\"date\"" : ""}>${cellDate.getDate()}</button>`;
+    });
+    body = `<div class="date-picker-weekdays">${DATE_PICKER_WEEKDAYS.map((day) => `<span>${day}</span>`).join("")}</div><div class="date-picker-grid">${cells.join("")}</div>`;
+  } else {
+    body = `<div class="date-picker-month-grid">${DATE_PICKER_MONTHS.map((label, index) => {
+      const value = pickerValue({ year: viewYear, month: index, day: 1 }, kind);
+      const selected = value === selectedValue;
+      const today = value === todayValue;
+      return `<button class="date-picker-month${selected ? " selected" : ""}${today ? " today" : ""}" type="button" data-date-option data-value="${value}"${selected ? " aria-current=\"date\"" : ""}>${label}</button>`;
+    }).join("")}</div>`;
+  }
+
+  root.querySelector(".custom-date-popover").innerHTML = `<div class="date-picker-header">${navigation}</div>${body}<div class="date-picker-footer"><button class="date-picker-text-button" type="button" data-date-clear${selectedValue ? "" : " disabled"}>清除</button><button class="date-picker-today" type="button" data-date-today>${kind === "date" ? "今天" : "本月"}</button></div>`;
+}
+
+function closeDatePickers() {
+  document.querySelectorAll("[data-date-root].open").forEach((root) => {
+    root.classList.remove("open", "opens-up");
+    const trigger = root.querySelector("[data-date-trigger]");
+    const popover = root.querySelector(".custom-date-popover");
+    trigger?.setAttribute("aria-expanded", "false");
+    if (popover) popover.hidden = true;
+  });
+}
+
+function openDatePicker(root) {
+  const trigger = root.querySelector("[data-date-trigger]");
+  const kind = trigger?.dataset.kind || "date";
+  const selected = parsePickerValue(trigger?.dataset.value, kind);
+  const today = new Date();
+  const year = selected?.year || today.getFullYear();
+  const month = selected?.month ?? today.getMonth();
+  root.dataset.viewYear = String(year);
+  root.dataset.viewMonth = String(month);
+  root.classList.add("open");
+  root.classList.toggle("opens-up", root.getBoundingClientRect().bottom > window.innerHeight - 370);
+  trigger?.setAttribute("aria-expanded", "true");
+  const popover = root.querySelector(".custom-date-popover");
+  if (popover) popover.hidden = false;
+  renderDatePicker(root);
+}
+
+function setDatePickerValue(root, value) {
+  const trigger = root.querySelector("[data-date-trigger]");
+  if (!trigger) return;
+  const kind = trigger.dataset.kind || "date";
+  trigger.dataset.value = value;
+  root.dataset.value = value;
+  trigger.classList.toggle("has-value", Boolean(value));
+  root.querySelector("[data-date-label]").textContent = formatPickerValue(value, kind);
+  updateFromElement(trigger);
+  closeDatePickers();
+  trigger.focus();
+}
+
 function customSelectHtml({ path, kind, options = [], value }) {
   const selectedValue = value == null ? "" : String(value);
   const items = ["", ...options];
@@ -143,6 +260,8 @@ function fieldHtml({ path, label, kind = "text", options = [], value, span = 1 }
     control = `<textarea ${data}>${escapeHtml(safeValue)}</textarea>`;
   } else if (kind === "select" || kind === "boolean") {
     control = customSelectHtml({ path, kind, options: kind === "boolean" ? ["true", "false"] : options, value });
+  } else if (kind === "date" || kind === "month") {
+    control = customDateHtml({ path, kind, value });
   } else {
     const type = ["email", "url", "number", "date", "month", "tel"].includes(kind) ? kind : "text";
     control = `<input ${data} type="${type}" value="${escapeHtml(safeValue)}" />`;
@@ -297,7 +416,7 @@ const repeatConfigs = {
 function renderRepeatField(section, index, item, spec) {
   const [path, label, kind, options = [], span = 1] = spec;
   const fullPath = `${section}[${index}].${path}`;
-  return fieldHtml({ path: fullPath, label, kind, options, value: getPath(state.snapshot, fullPath), span, hint });
+  return fieldHtml({ path: fullPath, label, kind, options, value: getPath(state.snapshot, fullPath), span });
 }
 
 function renderRepeatList(section) {
@@ -617,7 +736,7 @@ function updateFromElement(element) {
   const path = element.dataset.path;
   const kind = element.dataset.kind;
   if (!path) return;
-  let value = element.matches("[data-select-trigger]") ? element.dataset.value || "" : element.value;
+  let value = element.matches("[data-select-trigger], [data-date-trigger]") ? element.dataset.value || "" : element.value;
   if (kind === "select") value = value || null;
   if (kind === "boolean") value = value === "" ? null : value === "true";
   if (kind === "arrayText") value = parseArrayText(value);
@@ -779,6 +898,60 @@ function bindEvents() {
       return;
     }
 
+    const dateOption = event.target.closest("[data-date-option]");
+    if (dateOption) {
+      const root = dateOption.closest("[data-date-root]");
+      if (root) setDatePickerValue(root, dateOption.dataset.value || "");
+      return;
+    }
+
+    const dateClear = event.target.closest("[data-date-clear]");
+    if (dateClear) {
+      const root = dateClear.closest("[data-date-root]");
+      if (root) setDatePickerValue(root, "");
+      return;
+    }
+
+    const dateToday = event.target.closest("[data-date-today]");
+    if (dateToday) {
+      const root = dateToday.closest("[data-date-root]");
+      const kind = root?.querySelector("[data-date-trigger]")?.dataset.kind || "date";
+      if (root) setDatePickerValue(root, datePickerToday(kind));
+      return;
+    }
+
+    const dateNav = event.target.closest("[data-date-nav]");
+    if (dateNav) {
+      const root = dateNav.closest("[data-date-root]");
+      const trigger = root?.querySelector("[data-date-trigger]");
+      if (!root || !trigger) return;
+      const kind = trigger.dataset.kind || "date";
+      let year = Number(root.dataset.viewYear);
+      let month = Number(root.dataset.viewMonth);
+      const delta = Number(dateNav.dataset.dateNav);
+      if (kind === "date") {
+        const next = new Date(year, month + delta, 1);
+        year = next.getFullYear();
+        month = next.getMonth();
+      } else {
+        year += delta;
+      }
+      root.dataset.viewYear = String(year);
+      root.dataset.viewMonth = String(month);
+      renderDatePicker(root);
+      return;
+    }
+
+    const dateTrigger = event.target.closest("[data-date-trigger]");
+    if (dateTrigger) {
+      const root = dateTrigger.closest("[data-date-root]");
+      if (!root) return;
+      const wasOpen = root.classList.contains("open");
+      closeDatePickers();
+      if (!wasOpen) openDatePicker(root);
+      return;
+    }
+
     const trigger = event.target.closest("[data-select-trigger]");
     if (trigger) {
       const root = trigger.closest("[data-select-root]");
@@ -797,6 +970,7 @@ function bindEvents() {
       root.classList.remove("open");
       root.querySelector("[data-select-trigger]")?.setAttribute("aria-expanded", "false");
     });
+    closeDatePickers();
 
     const nav = event.target.closest("[data-section]");
     if (nav) showSection(nav.dataset.section);
@@ -839,6 +1013,10 @@ function bindEvents() {
   document.querySelector("#content-scroll").addEventListener("scroll", syncActiveSection, { passive: true });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
+      if (document.querySelector("[data-date-root].open")) {
+        closeDatePickers();
+        return;
+      }
       if (!document.querySelector("#confirm-modal")?.hidden) finishConfirm(false);
       closeModal("profile-list-modal");
       closeModal("profile-editor-modal");
