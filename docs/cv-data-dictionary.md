@@ -4,7 +4,7 @@
 
 本文档是 FastCV CV 数据模型的**唯一真源（Single Source of Truth）**。
 
-所有前端表单、浏览器存储、IndexedDB 快照、职位档案、JSON 备份恢复、网页字段映射和 Jev 决策工作流都必须遵守本文档。实现中不得自行增加、重命名、改变类型或改变含义；如需新增字段或调整约束，必须先修改本文档并提升 `schemaVersion`。
+所有前端表单、浏览器存储、IndexedDB 快照、职位档案、JSON 备份恢复、网页字段映射和 Jev 决策工作流都必须遵守本文档。实现中不得自行增加、重命名、改变类型或改变含义。字段变化必须先修改本文档；仅当变更不兼容旧快照时提升 `schemaVersion`。本次基础信息扩展均为可选字段，旧快照读取时会补齐默认空值，因此继续使用 `schemaVersion: 1`。
 
 本文档定义的是 FastCV 内部的结构化个人资料，不定义招聘网站的字段名。招聘网站字段必须映射到本文档中的标准路径后才能参与填写。
 
@@ -144,12 +144,19 @@ snapshot
 | `basics.givenName` | `string` | 否 | `personal` | `confirm` | 名；网站要求拆分姓名时使用 |
 | `basics.familyName` | `string` | 否 | `personal` | `confirm` | 姓；网站要求拆分姓名时使用 |
 | `basics.preferredName` | `string` | 否 | `personal` | `confirm` | 希望招聘方称呼的姓名 |
-| `basics.nameLatin` | `string` | 否 | `personal` | `confirm` | 拉丁字母姓名，不能由模型音译生成 |
+| `basics.nameLatin` | `string` | 否 | `personal` | `confirm` | 姓名拼音或英文姓名；不能由模型音译生成 |
 | `basics.headline` | `string` | 否 | `public` | `auto` | 职业标题，最长 160 字符 |
-| `basics.summary` | `string` | 否 | `public` | `confirm` | 用户手动维护的个人简介，最长 5000 字符 |
+| `basics.summary` | `string` | 否 | `public` | `confirm` | 用户手动维护的个人简介或自我评价，最长 5000 字符；沿用原字段路径以兼容既有快照 |
 | `basics.gender` | `enum` | 否 | `restricted` | `never` | 见 `gender` 枚举；默认不展示 |
 | `basics.genderSelfDescription` | `string` | 否 | `restricted` | `never` | 兼容旧数据的补充说明；当前界面不再提供“自定义”性别选项 |
 | `basics.birthDate` | `date` | 否 | `restricted` | `never` | 出生日期，默认不填写 |
+| `basics.politicalStatus` | `string` | 否 | `restricted` | `never` | 政治面貌；用户手工填写，不自动写入网站 |
+| `basics.idNumber` | `string` | 否 | `sensitive` | `never` | 身份证件号码；默认不填写、不自动发送 |
+| `basics.maritalHistory` | `string` | 否 | `restricted` | `never` | 婚史；用户手工填写，不自动写入网站 |
+| `basics.ethnicity` | `string` | 否 | `restricted` | `never` | 民族；用户手工填写，不自动写入网站 |
+| `basics.nativePlace` | `string` | 否 | `personal` | `never` | 籍贯 |
+| `basics.birthplace` | `string` | 否 | `personal` | `never` | 出生地 |
+| `basics.studentSourcePlace` | `string` | 否 | `personal` | `never` | 生源地 |
 
 ### 6.2 `contact`
 
@@ -384,7 +391,7 @@ achievement
 | `application.relocationPreference` | `enum` | 否 | `personal` | `confirm` | 见 `relocationPreference` |
 | `application.travelPreference` | `enum` | 否 | `personal` | `confirm` | 见 `travelPreference` |
 
-以下问题不纳入当前数据字典，不能由模型代答或自动保存：健康、残障、种族、宗教、性取向、犯罪记录、家庭关系等受保护或高风险问卷字段。网站出现这些字段时，插件只能提示用户手工处理。
+健康、残障、宗教、性取向、犯罪记录、家庭关系等受保护或高风险问卷字段不纳入当前数据字典，不能由模型代答或自动保存。民族字段仅用于用户在基础资料中自行维护，敏感级别为 `restricted`、默认策略为 `never`；其他网站问卷中的种族或民族字段仍只能提示用户手工处理。
 
 ## 15. 枚举字典
 
@@ -645,4 +652,4 @@ Jev 不得：
 5. 网页映射和 Jev 问题定义是否需要更新；
 6. 是否提升 `schemaVersion` 或 `formatVersion`。
 
-未经本文档更新和评审，禁止在代码中增加未定义的 CV 字段、枚举值或隐式字段。
+仅新增可选字段且读取方可为旧快照补齐默认空值时，允许保持 `schemaVersion` 不变，但必须在本文档列出字段并说明旧数据兼容方式。移除字段、改变类型或含义、改变必填性，或无法兼容读取旧快照时，必须提升 `schemaVersion` 并定义迁移。未经本文档更新和评审，禁止在代码中增加未定义的 CV 字段、枚举值或隐式字段。

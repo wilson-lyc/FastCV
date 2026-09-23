@@ -71,7 +71,7 @@ function deepMerge(base, source) {
 
 function emptySnapshot() {
   return {
-    basics: { fullName: "", givenName: "", familyName: "", preferredName: "", nameLatin: "", headline: "", summary: "", gender: null, genderSelfDescription: "", birthDate: null },
+    basics: { fullName: "", givenName: "", familyName: "", preferredName: "", nameLatin: "", headline: "", summary: "", gender: null, genderSelfDescription: "", birthDate: null, politicalStatus: "", idNumber: "", maritalHistory: "", ethnicity: "", nativePlace: "", birthplace: "", studentSourcePlace: "" },
     contact: { primaryEmail: "", secondaryEmail: "", primaryPhone: "", secondaryPhone: "", preferredChannel: null },
     location: { currentCountry: "", currentCity: "", currentRegion: "", postalCode: "", address: "" },
     objective: { targetTitles: [], targetIndustries: [], targetLocations: [], employmentTypes: [], remotePreference: null, availableFrom: null, willingToRelocate: null, willingToTravel: null, expectedSalary: { min: null, max: null, currency: "", period: null, negotiable: null } },
@@ -331,9 +331,16 @@ function renderStaticForms() {
   document.querySelector("#basics-form").innerHTML = [
     formField("basics.fullName", "姓名", "text"),
     formField("basics.nameLatin", "姓名拼音", "text"),
-    formField("basics.summary", "个人简介", "textarea", [], 2),
     formField("basics.gender", "性别", "select", SELECTS.gender),
     formField("basics.birthDate", "出生日期", "date"),
+    formField("basics.politicalStatus", "政治面貌", "text"),
+    formField("basics.idNumber", "证件号", "text"),
+    formField("basics.maritalHistory", "婚史", "text"),
+    formField("basics.ethnicity", "民族", "text"),
+    formField("basics.nativePlace", "籍贯", "text"),
+    formField("basics.birthplace", "出生地", "text"),
+    formField("basics.studentSourcePlace", "生源地", "text"),
+    formField("basics.summary", "自我评价", "textarea", [], 2),
   ].join("");
 
   document.querySelector("#contact-form").innerHTML = [
