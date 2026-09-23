@@ -16,6 +16,7 @@ let toastTimer;
 let profileEditorMode = "create";
 let profileEditorId = null;
 let confirmResolver = null;
+const modalControllers = new Map();
 
 const SELECTS = {
   gender: ["male", "female", "prefer_not_to_say"],
@@ -509,12 +510,15 @@ function renderProfileVersionList() {
 function openModal(id) {
   const modal = document.querySelector(`#${id}`);
   if (!modal) return;
-  modal.hidden = false;
+  if (!modalControllers.has(id)) modalControllers.set(id, window.createModalController(modal));
+  modalControllers.get(id).open();
 }
 
 function closeModal(id) {
   const modal = document.querySelector(`#${id}`);
-  if (modal) modal.hidden = true;
+  if (!modal) return;
+  if (!modalControllers.has(id)) modalControllers.set(id, window.createModalController(modal));
+  modalControllers.get(id).close();
 }
 
 function requestConfirm(message, title = "确认操作", confirmText = "确认") {
@@ -790,16 +794,7 @@ function setStorageStatus(text) {
 }
 
 function openSettings() {
-  if (typeof chrome !== "undefined" && chrome.runtime?.openOptionsPage) {
-    try {
-      const result = chrome.runtime.openOptionsPage();
-      if (result && typeof result.catch === "function") result.catch(() => window.open(chrome.runtime.getURL("settings.html"), "_blank"));
-      return;
-    } catch { /* 非扩展页面中回退到设置页 */ }
-    window.open(chrome.runtime.getURL("settings.html"), "_blank");
-    return;
-  }
-  window.open("settings.html", "_blank");
+  window.location.assign("settings.html");
 }
 
 function showToast(message) {
@@ -932,7 +927,7 @@ function bindEvents() {
 
     if (event.target.classList.contains("modal-backdrop")) {
       if (event.target.id === "confirm-modal") finishConfirm(false);
-      else event.target.hidden = true;
+      else closeModal(event.target.id);
       return;
     }
 

@@ -1,0 +1,12 @@
+.modal-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 24px; background: rgba(17, 24, 39, .28); }
+.modal-backdrop[hidden] { display: none; }
+.modal-card { width: min(100%, 520px); max-height: min(640px, calc(100vh - 48px)); overflow: auto; padding: 18px; border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; box-shadow: 0 24px 60px rgba(17, 24, 39, .16); color: #111827; font-size: 16px; }
+.modal-card input:not([type="checkbox"]), .modal-card textarea, .modal-card select, .modal-card .custom-select-trigger, .modal-card .custom-date-trigger { font-size: 14px; font-weight: 400; }
+.modal-card-editor { width: min(100%, 430px); }
+.confirm-card { width: min(100%, 420px); }
+.modal-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 16px; }
+.modal-header h2 { margin: 0; color: #111827; font-size: 20px; font-weight: 600; letter-spacing: -.03em; }
+.modal-close { width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 7px; background: transparent; color: #6b7280; font-size: 20px; line-height: 1; }
+.modal-close:hover { background: #f3f4f6; color: #111827; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+.confirm-message { margin: 0; color: #4b5563; font-size: 16px; line-height: 1.5; white-space: pre-line; }

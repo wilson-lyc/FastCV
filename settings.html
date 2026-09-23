@@ -3,14 +3,74 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FastCV · 设置</title>
-    <style>
-      html, body, iframe { width: 100%; height: 100%; }
-      html, body { margin: 0; border: 0; overflow: hidden; }
-      iframe { display: block; border: 0; }
-    </style>
+    <meta name="theme-color" content="#ffffff" />
+    <title>FastCV · 系统设置</title>
+    <link rel="stylesheet" href="settings.css" />
+    <link rel="stylesheet" href="modal.css" />
   </head>
   <body>
-    <iframe src="index.html" title="FastCV 设置"></iframe>
+    <div class="settings-shell">
+      <aside class="settings-sidebar" aria-label="设置导航">
+        <nav>
+          <a class="nav-item active" href="#data-backup" aria-current="page">
+            数据备份
+          </a>
+        </nav>
+        <a class="back-link" href="index.html"><span aria-hidden="true">←</span> 返回简历资料</a>
+      </aside>
+
+      <main class="settings-main">
+        <section class="settings-section" id="data-backup" aria-labelledby="backup-title">
+          <div class="section-heading">
+            <div>
+              <h2 id="backup-title">数据备份</h2>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="card-copy">
+              <h3>导出或导入备份</h3>
+              <p>备份包括所有档案、历史版本和网站规则。导入时会创建档案副本，不会覆盖现有数据。</p>
+              <div class="button-row">
+                <button class="button button-primary" id="export-button" type="button">导出备份</button>
+                <button class="button button-secondary" id="import-button" type="button">导入备份</button>
+                <input id="import-file" type="file" accept="application/json,.json" hidden />
+              </div>
+              <p class="status-message" id="status-message" role="status" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <div class="settings-card danger-card">
+            <div class="card-icon danger-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M10 11v6m4-6v6M5.5 7l1 13h11l1-13M9 7V4h6v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="card-copy">
+              <h3>重置全部数据</h3>
+              <p>删除此浏览器中的所有档案、历史版本和本地记录。此操作不可撤销，建议先导出备份。</p>
+              <button class="button button-danger" id="reset-button" type="button">重置</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div class="modal-backdrop" id="reset-modal" hidden>
+      <section class="modal-card confirm-card" role="dialog" aria-modal="true" aria-labelledby="reset-title" aria-describedby="reset-message" tabindex="-1">
+        <div class="modal-header">
+          <h2 id="reset-title">重置全部数据</h2>
+          <button class="modal-close" id="reset-close" type="button" aria-label="关闭"><svg width="14" height="14" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M8 8L40 40" stroke="#000000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 40L40 8" stroke="#000000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <p class="confirm-message" id="reset-message">确定重置全部数据吗？这会删除所有档案、历史版本、网站规则和本地记录，且无法恢复。建议先导出备份。</p>
+        <p class="modal-error" id="reset-error" role="alert"></p>
+        <div class="modal-actions">
+          <button class="button button-quiet" id="reset-cancel" type="button" data-modal-initial-focus>取消</button>
+          <button class="button button-primary" id="reset-confirm" type="button">确认重置</button>
+        </div>
+      </section>
+    </div>
+    <script src="modal.js"></script>
+    <script src="settings.js"></script>
   </body>
 </html>

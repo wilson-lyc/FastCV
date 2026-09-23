@@ -1,0 +1,85 @@
+:root {
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #111827;
+  background: #fff;
+  font-synthesis: none;
+  --ink: #111827;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --soft: #f9fafb;
+  --accent: #111827;
+}
+
+* { box-sizing: border-box; }
+body { min-width: 320px; min-height: 100vh; margin: 0; background: #fff; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+
+.settings-shell { min-height: 100vh; }
+.settings-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  display: flex;
+  flex-direction: column;
+  width: 248px;
+  padding: 26px 18px 18px;
+  border-right: 1px solid var(--line);
+  background: #fafafa;
+}
+.nav-item { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 8px 10px; border-radius: 7px; color: #374151; text-decoration: none; font-size: 14px; }
+.nav-item.active { background: var(--ink); color: #fff; font-weight: 500; }
+.back-link { display: flex; align-items: center; gap: 8px; margin-top: auto; padding: 10px; color: #6b7280; text-decoration: none; font-size: 14px; }
+.back-link:hover { color: var(--ink); }
+
+.settings-main { width: calc(100% - 248px); margin: 0 0 0 248px; padding: 34px clamp(28px, 6vw, 88px) 28px; }
+h2, h3, p { margin-top: 0; }
+.settings-section { width: min(100%, 1040px); margin: 0 auto; padding-top: 0; }
+.section-heading { margin-bottom: 18px; }
+.section-heading h2 { margin-bottom: 4px; font-size: 19px; font-weight: 600; letter-spacing: -.01em; }
+.settings-card { display: flex; gap: 16px; padding: 22px; border: 1px solid var(--line); border-radius: 11px; background: #fff; }
+.settings-card + .settings-card { margin-top: 13px; }
+.card-icon { display: grid; width: 38px; height: 38px; flex: 0 0 38px; place-items: center; border-radius: 9px; background: #f3f4f6; color: #4b5563; }
+.card-icon svg { width: 20px; height: 20px; }
+.card-copy { min-width: 0; flex: 1; }
+.card-copy h3 { margin: 2px 0 4px; font-size: 15px; font-weight: 600; }
+.card-copy > p:not(.status-message) { max-width: 640px; margin-bottom: 15px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.button-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.button { min-height: 38px; padding: 8px 13px; border: 1px solid transparent; border-radius: 7px; font-size: 14px; font-weight: 500; transition: background .15s, border-color .15s, color .15s; }
+.button:focus-visible, a:focus-visible { outline: 3px solid rgba(17, 24, 39, .18); outline-offset: 2px; }
+.button-primary { background: var(--accent); color: #fff; }
+.button-primary:hover { background: #2b3442; }
+.button-secondary { border-color: #d1d5db; background: #fff; color: var(--ink); }
+.button-secondary:hover { background: var(--soft); }
+.button-quiet { border-color: #d1d5db; background: #fff; color: #4b5563; }
+.button-quiet:hover { border-color: #9ca3af; background: #f3f4f6; color: var(--ink); }
+.status-message { min-height: 20px; margin: 9px 0 0; color: #4b5563; font-size: 13px; }
+.status-message.error { color: #b42318; }
+.status-message:empty { display: none; }
+.danger-card { border-color: #f0e1e1; }
+.danger-icon { background: #fff5f5; color: #b42318; }
+.button-danger { border-color: #e5b8b5; background: #fff; color: #b42318; }
+.button-danger:hover { border-color: #b42318; background: #fff7f6; }
+.button:disabled { cursor: wait; opacity: .65; }
+.modal-error { margin: 10px 0 0; color: #b42318; font-size: 13px; }
+.modal-error:empty { display: none; }
+.button-resetting { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding-top: 6px; padding-bottom: 6px; }
+.reset-button-spinner { flex: 0 0 18px; animation: reset-spin .8s linear infinite; }
+@keyframes reset-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .reset-button-spinner { animation: none; }
+}
+
+@media (max-width: 720px) {
+  .settings-sidebar { position: static; width: auto; min-height: auto; padding: 14px 18px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .back-link { display: none; }
+  .settings-main { width: 100%; margin-left: 0; padding: 22px 20px 24px; }
+}
+
+@media (max-width: 440px) {
+  .settings-card { gap: 12px; padding: 16px; }
+  .card-icon { width: 32px; height: 32px; flex-basis: 32px; }
+  .button-row .button { flex: 1; }
+}
