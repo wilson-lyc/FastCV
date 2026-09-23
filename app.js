@@ -11,6 +11,7 @@ let state = {
   activeSection: "basics",
 };
 let saveTimer;
+let saveStatusTimer;
 let toastTimer;
 let profileEditorMode = "create";
 let profileEditorId = null;
@@ -171,12 +172,31 @@ function renderDatePicker(root) {
   const viewYear = Number(root.dataset.viewYear);
   const viewMonth = Number(root.dataset.viewMonth);
   const todayValue = datePickerToday(kind);
+  const editingPeriod = root.dataset.datePickerEditing || "";
+  const yearPageStart = Number(root.dataset.datePickerYearStart || viewYear - 4);
+  const yearControl = editingPeriod === "year"
+    ? `<strong>请选择年份</strong>`
+    : `<button class="date-picker-period-button" type="button" data-date-edit-year aria-label="选择年份">${viewYear}年</button>`;
+  const monthControl = kind === "date" && !editingPeriod
+    ? `<button class="date-picker-period-button" type="button" data-date-edit-month aria-label="选择月份" aria-expanded="${editingPeriod === "month"}">${viewMonth + 1}月</button>`
+    : "";
+  const previousLabel = editingPeriod === "year" ? "上一组年份" : editingPeriod === "month" || kind === "month" ? "上一年" : "上一个月";
+  const nextLabel = editingPeriod === "year" ? "下一组年份" : editingPeriod === "month" || kind === "month" ? "下一年" : "下一个月";
   const navigation = kind === "date"
-    ? `<button class="date-picker-nav" type="button" data-date-nav="-1" aria-label="上一个月">‹</button><div class="date-picker-heading"><strong>${viewYear}年${viewMonth + 1}月</strong><span>选择具体日期</span></div><button class="date-picker-nav" type="button" data-date-nav="1" aria-label="下一个月">›</button>`
-    : `<button class="date-picker-nav" type="button" data-date-nav="-1" aria-label="上一年">‹</button><div class="date-picker-heading"><strong>${viewYear}年</strong><span>选择月份</span></div><button class="date-picker-nav" type="button" data-date-nav="1" aria-label="下一年">›</button>`;
+    ? `<button class="date-picker-nav" type="button" data-date-nav="-1" aria-label="${previousLabel}">‹</button><div class="date-picker-heading"><div class="date-picker-period">${yearControl}${monthControl}</div></div><button class="date-picker-nav" type="button" data-date-nav="1" aria-label="${nextLabel}">›</button>`
+    : `<button class="date-picker-nav" type="button" data-date-nav="-1" aria-label="${previousLabel}">‹</button><div class="date-picker-heading">${yearControl}</div><button class="date-picker-nav" type="button" data-date-nav="1" aria-label="${nextLabel}">›</button>`;
 
   let body;
-  if (kind === "date") {
+  if (editingPeriod === "year") {
+    const selectedValueYear = parsePickerValue(selectedValue, kind)?.year;
+    const todayYear = parsePickerValue(todayValue, kind)?.year;
+    body = `<div class="date-picker-year-grid">${Array.from({ length: 9 }, (_, index) => {
+      const year = yearPageStart + index;
+      const selected = year === selectedValueYear;
+      const today = year === todayYear;
+      return `<button class="date-picker-year-option${selected ? " selected" : ""}${today ? " today" : ""}" type="button" data-date-view-year="${year}"${selected ? " aria-current=\"date\"" : ""}>${year}年</button>`;
+    }).join("")}</div>`;
+  } else if (kind === "date" && editingPeriod !== "month") {
     const firstWeekday = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7;
     const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
     const cellCount = firstWeekday + daysInMonth > 35 ? 42 : 35;
@@ -191,11 +211,19 @@ function renderDatePicker(root) {
     });
     body = `<div class="date-picker-weekdays">${DATE_PICKER_WEEKDAYS.map((day) => `<span>${day}</span>`).join("")}</div><div class="date-picker-grid">${cells.join("")}</div>`;
   } else {
+    const selectedMonthValue = parsePickerValue(selectedValue, kind);
+    const todayMonthValue = parsePickerValue(todayValue, kind);
+    const choosingDateMonth = kind === "date";
     body = `<div class="date-picker-month-grid">${DATE_PICKER_MONTHS.map((label, index) => {
       const value = pickerValue({ year: viewYear, month: index, day: 1 }, kind);
-      const selected = value === selectedValue;
-      const today = value === todayValue;
-      return `<button class="date-picker-month${selected ? " selected" : ""}${today ? " today" : ""}" type="button" data-date-option data-value="${value}"${selected ? " aria-current=\"date\"" : ""}>${label}</button>`;
+      const selected = choosingDateMonth
+        ? selectedMonthValue?.year === viewYear && selectedMonthValue.month === index
+        : value === selectedValue;
+      const today = todayMonthValue?.year === viewYear && todayMonthValue.month === index;
+      const optionAttributes = choosingDateMonth
+        ? `data-date-view-month data-month="${index}"`
+        : `data-date-option data-value="${value}"`;
+      return `<button class="date-picker-month${selected ? " selected" : ""}${today ? " today" : ""}" type="button" ${optionAttributes}${selected ? " aria-current=\"date\"" : ""}>${choosingDateMonth ? `${index + 1}月` : label}</button>`;
     }).join("")}</div>`;
   }
 
@@ -205,6 +233,8 @@ function renderDatePicker(root) {
 function closeDatePickers() {
   document.querySelectorAll("[data-date-root].open").forEach((root) => {
     root.classList.remove("open", "opens-up");
+    delete root.dataset.datePickerEditing;
+    delete root.dataset.datePickerYearStart;
     const trigger = root.querySelector("[data-date-trigger]");
     const popover = root.querySelector(".custom-date-popover");
     trigger?.setAttribute("aria-expanded", "false");
@@ -221,15 +251,26 @@ function openDatePicker(root) {
   const month = selected?.month ?? today.getMonth();
   root.dataset.viewYear = String(year);
   root.dataset.viewMonth = String(month);
+  root.classList.remove("opens-up");
   root.classList.add("open");
-  root.classList.toggle("opens-up", root.getBoundingClientRect().bottom > window.innerHeight - 370);
   trigger?.setAttribute("aria-expanded", "true");
   const popover = root.querySelector(".custom-date-popover");
   if (popover) popover.hidden = false;
   renderDatePicker(root);
+
+  if (popover && trigger) {
+    const gap = 8;
+    const triggerRect = trigger.getBoundingClientRect();
+    const popoverHeight = popover.getBoundingClientRect().height;
+    const spaceBelow = window.innerHeight - triggerRect.bottom;
+    const spaceAbove = triggerRect.top;
+    const fitsBelow = spaceBelow >= popoverHeight + gap;
+    const fitsAbove = spaceAbove >= popoverHeight + gap;
+    root.classList.toggle("opens-up", !fitsBelow && (fitsAbove || spaceAbove > spaceBelow));
+  }
 }
 
-function setDatePickerValue(root, value) {
+function setDatePickerValue(root, value, closeAfterUpdate = false) {
   const trigger = root.querySelector("[data-date-trigger]");
   if (!trigger) return;
   const kind = trigger.dataset.kind || "date";
@@ -238,8 +279,12 @@ function setDatePickerValue(root, value) {
   trigger.classList.toggle("has-value", Boolean(value));
   root.querySelector("[data-date-label]").textContent = formatPickerValue(value, kind);
   updateFromElement(trigger);
-  closeDatePickers();
-  trigger.focus();
+  if (closeAfterUpdate) {
+    closeDatePickers();
+    trigger.focus();
+  } else {
+    renderDatePicker(root);
+  }
 }
 
 function customSelectHtml({ path, kind, options = [], value }) {
@@ -597,9 +642,9 @@ function showSection(section, shouldScroll = true) {
     if (container && panel) {
       const panelTop = panel.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
       if (container.scrollHeight > container.clientHeight) {
-        container.scrollTo({ top: Math.max(0, panelTop - 24), behavior: "smooth" });
+        container.scrollTo({ top: Math.max(0, panelTop - 24), behavior: "instant" });
       } else {
-        panel.scrollIntoView({ behavior: "smooth", block: "start" });
+        panel.scrollIntoView({ behavior: "instant", block: "start" });
       }
     }
   }
@@ -699,14 +744,17 @@ async function saveDraftNow(showMessage = false) {
     transaction.objectStore("profiles").put(state.profile);
     transaction.objectStore("profileDrafts").put({ profileId: state.profile.profileId, snapshot: clone(state.snapshot), updatedAt: now });
   });
-  if (showMessage) showToast("草稿已保存");
+  if (showMessage) showToast("已保存");
   setStorageStatus("本地已保存");
 }
 
 function scheduleDraftSave() {
   clearTimeout(saveTimer);
   setStorageStatus("保存中…");
-  saveTimer = setTimeout(() => saveDraftNow().catch(() => setStorageStatus("保存失败")), 450);
+  saveTimer = setTimeout(() => saveDraftNow().catch(() => {
+    setStorageStatus("保存失败");
+    showToast("保存失败");
+  }), 450);
 }
 
 async function saveVersion() {
@@ -720,7 +768,39 @@ async function saveVersion() {
   showToast("已保存为新版本");
 }
 
-function setStorageStatus(text) { document.querySelector("#storage-status").textContent = text; }
+function setStorageStatus(text) {
+  const status = document.querySelector("#save-button");
+  if (!status) return;
+  clearTimeout(saveStatusTimer);
+  if (text.includes("失败")) {
+    status.dataset.state = "error";
+    status.setAttribute("aria-label", text);
+  } else if (text.includes("保存中")) {
+    status.dataset.state = "saving";
+    status.setAttribute("aria-label", "保存中");
+  } else {
+    status.dataset.state = "success";
+    status.setAttribute("aria-label", "保存成功");
+    saveStatusTimer = setTimeout(() => {
+      if (status.dataset.state !== "success") return;
+      status.dataset.state = "saved";
+      status.setAttribute("aria-label", "已保存");
+    }, 1000);
+  }
+}
+
+function openSettings() {
+  if (typeof chrome !== "undefined" && chrome.runtime?.openOptionsPage) {
+    try {
+      const result = chrome.runtime.openOptionsPage();
+      if (result && typeof result.catch === "function") result.catch(() => window.open(chrome.runtime.getURL("settings.html"), "_blank"));
+      return;
+    } catch { /* 非扩展页面中回退到设置页 */ }
+    window.open(chrome.runtime.getURL("settings.html"), "_blank");
+    return;
+  }
+  window.open("settings.html", "_blank");
+}
 
 function showToast(message) {
   const toast = document.querySelector("#toast");
@@ -898,10 +978,36 @@ function bindEvents() {
       return;
     }
 
+    const dateViewMonth = event.target.closest("[data-date-view-month]");
+    if (dateViewMonth) {
+      const root = dateViewMonth.closest("[data-date-root]");
+      if (!root) return;
+      root.dataset.viewMonth = dateViewMonth.dataset.month;
+      delete root.dataset.datePickerEditing;
+      renderDatePicker(root);
+      return;
+    }
+
+    const dateViewYear = event.target.closest("[data-date-view-year]");
+    if (dateViewYear) {
+      const root = dateViewYear.closest("[data-date-root]");
+      if (!root) return;
+      root.dataset.viewYear = dateViewYear.dataset.dateViewYear;
+      delete root.dataset.datePickerYearStart;
+      if (root.querySelector("[data-date-trigger]")?.dataset.kind === "date") {
+        root.dataset.datePickerEditing = "month";
+      } else {
+        delete root.dataset.datePickerEditing;
+      }
+      renderDatePicker(root);
+      return;
+    }
+
     const dateOption = event.target.closest("[data-date-option]");
     if (dateOption) {
       const root = dateOption.closest("[data-date-root]");
-      if (root) setDatePickerValue(root, dateOption.dataset.value || "");
+      const kind = root?.querySelector("[data-date-trigger]")?.dataset.kind;
+      if (root) setDatePickerValue(root, dateOption.dataset.value || "", kind === "date");
       return;
     }
 
@@ -920,6 +1026,29 @@ function bindEvents() {
       return;
     }
 
+    const editYear = event.target.closest("[data-date-edit-year]");
+    if (editYear) {
+      const root = editYear.closest("[data-date-root]");
+      if (!root) return;
+      root.dataset.datePickerEditing = "year";
+      root.dataset.datePickerYearStart = String(Number(root.dataset.viewYear) - 4);
+      renderDatePicker(root);
+      return;
+    }
+
+    const editMonth = event.target.closest("[data-date-edit-month]");
+    if (editMonth) {
+      const root = editMonth.closest("[data-date-root]");
+      if (!root) return;
+      if (root.dataset.datePickerEditing === "month") delete root.dataset.datePickerEditing;
+      else {
+        delete root.dataset.datePickerYearStart;
+        root.dataset.datePickerEditing = "month";
+      }
+      renderDatePicker(root);
+      return;
+    }
+
     const dateNav = event.target.closest("[data-date-nav]");
     if (dateNav) {
       const root = dateNav.closest("[data-date-root]");
@@ -929,15 +1058,20 @@ function bindEvents() {
       let year = Number(root.dataset.viewYear);
       let month = Number(root.dataset.viewMonth);
       const delta = Number(dateNav.dataset.dateNav);
-      if (kind === "date") {
+      if (root.dataset.datePickerEditing === "year") {
+        const yearPageStart = Number(root.dataset.datePickerYearStart || year - 4);
+        root.dataset.datePickerYearStart = String(yearPageStart + delta * 9);
+      } else if (kind === "date" && root.dataset.datePickerEditing !== "month") {
         const next = new Date(year, month + delta, 1);
         year = next.getFullYear();
         month = next.getMonth();
       } else {
         year += delta;
       }
-      root.dataset.viewYear = String(year);
-      root.dataset.viewMonth = String(month);
+      if (root.dataset.datePickerEditing !== "year") {
+        root.dataset.viewYear = String(year);
+        root.dataset.viewMonth = String(month);
+      }
       renderDatePicker(root);
       return;
     }
@@ -951,6 +1085,8 @@ function bindEvents() {
       if (!wasOpen) openDatePicker(root);
       return;
     }
+
+    if (event.target.closest(".custom-date-popover")) return;
 
     const trigger = event.target.closest("[data-select-trigger]");
     if (trigger) {
@@ -1001,6 +1137,17 @@ function bindEvents() {
     if (event.target.matches("[data-path]")) updateFromElement(event.target);
   });
   document.querySelector("#new-profile-button").addEventListener("click", createNewProfile);
+  document.querySelector("#save-button")?.addEventListener("click", async () => {
+    clearTimeout(saveTimer);
+    setStorageStatus("保存中…");
+    try {
+      await saveDraftNow(true);
+    } catch {
+      setStorageStatus("保存失败");
+      showToast("保存失败");
+    }
+  });
+  document.querySelector("#settings-button")?.addEventListener("click", openSettings);
   document.querySelector("#profile-editor-form").addEventListener("submit", saveProfileEditor);
   document.querySelector("#save-version-button")?.addEventListener("click", saveVersion);
   document.querySelector("#export-button")?.addEventListener("click", exportBackup);
